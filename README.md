@@ -1,5 +1,12 @@
 # DriveMounter 🌐 (KDE Plasma)
 
+<p align="center">
+  <a href="https://github.com/Shieldowskyy/drivemounter/actions/workflows/tests.yml"><img src="https://github.com/Shieldowskyy/drivemounter/actions/workflows/tests.yml/badge.svg" alt="Tests" /></a>
+  <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT" /></a>
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.9+-3776AB.svg?logo=python&logoColor=white" alt="Python 3.9+" /></a>
+  <a href="https://kde.org/"><img src="https://img.shields.io/badge/KDE-Plasma-1D99F3.svg?logo=kde&logoColor=white" alt="KDE Plasma" /></a>
+</p>
+
 A pixel-perfect 1:1 recreation of the classic Windows **Map Network Drive** wizard, built natively for **KDE Plasma** using **PyQt6** and the native **Breeze** design system.
 
 Seamlessly mount remote network storage on Linux with the familiar Windows workflow: choose a drive letter (`Z:` to `D:`), enter the network path or browse, configure auto-reconnect on sign-in, and provide network credentials.

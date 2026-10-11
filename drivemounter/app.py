@@ -75,16 +75,19 @@ def install_desktop_file():
 
     content = f"""[Desktop Entry]
 Type=Application
-Name=Mapuj dysk sieciowy (DriveMounter)
-GenericName=Map Network Drive
-Comment=Montowanie dysków sieciowych SMB, NFS, WebDAV w stylu Windows dla KDE Plasma
+Name=Map Network Drive
+Name[pl]=Mapuj dysk sieciowy
+GenericName=Network Drive Mounter
+GenericName[pl]=Narzędzie do mapowania dysków sieciowych
+Comment=Mount SMB, NFS, and WebDAV network shares with a Windows-like wizard
+Comment[pl]=Mapuj udziały sieciowe SMB, NFS oraz WebDAV za pomocą kreatora w stylu Windows
 Exec={exec_cmd}
 Icon=drive-network
 Terminal=false
-Categories=System;FileTools;Network;
-Keywords=smb;cifs;nfs;webdav;dysk;sieciowy;map;network;drive;mount;
+Categories=Qt;KDE;System;Network;FileTools;
 StartupNotify=true
 StartupWMClass=drivemounter
+Keywords=drive;mount;network;samba;smb;nfs;webdav;share;cifs;
 """
     with open(target, "w", encoding="utf-8") as f:
         f.write(content)
