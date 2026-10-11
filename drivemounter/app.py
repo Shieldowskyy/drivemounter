@@ -22,7 +22,7 @@ def main():
     )
     parser.add_argument("--remount", action="store_true", help="Silent remount on login (autostart)")
     parser.add_argument("--disconnect", action="store_true", help="Open disconnect network drives window")
-    parser.add_argument("--install-desktop", action="store_true", help="Install desktop shortcut into KDE application menu")
+    parser.add_argument("--uninstall", action="store_true", help="Remove desktop shortcuts, Dolphin service menus, and autostart")
     parser.add_argument("--lang", choices=["en", "pl"], default=None, help="Force UI language (en=English, pl=Polish)")
 
     args = parser.parse_args()
@@ -43,7 +43,13 @@ def main():
     # Handle desktop shortcut installation
     if args.install_desktop:
         install_desktop_file()
-        print("Zainstalowano skrót w menu aplikacji KDE.")
+        print("Installed desktop entry and Dolphin service menu.")
+        sys.exit(0)
+
+    # Handle desktop shortcuts removal
+    if args.uninstall:
+        uninstall_desktop_files()
+        print("Removed desktop shortcuts and Dolphin service menus.")
         sys.exit(0)
 
     # Start GUI Application
@@ -122,6 +128,22 @@ Exec={exec_cmd} --disconnect
     with open(service_target, "w", encoding="utf-8") as f:
         f.write(service_content)
     os.chmod(service_target, 0o755)
+
+def uninstall_desktop_files():
+    # 1. Desktop application shortcut
+    app_desktop = Path.home() / ".local" / "share" / "applications" / "drivemounter.desktop"
+    if app_desktop.exists():
+        app_desktop.unlink()
+
+    # 2. Dolphin service menu
+    service_desktop = Path.home() / ".local" / "share" / "kio" / "servicemenus" / "drivemounter.desktop"
+    if service_desktop.exists():
+        service_desktop.unlink()
+
+    # 3. Autostart shortcut
+    autostart_file = Path.home() / ".config" / "autostart" / "drivemounter-autostart.desktop"
+    if autostart_file.exists():
+        autostart_file.unlink()
 
 if __name__ == "__main__":
     main()

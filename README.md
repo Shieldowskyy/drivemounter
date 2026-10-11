@@ -135,6 +135,18 @@ drivemounter --remount
 # Switch UI language (English is default)
 drivemounter --lang en   # English
 drivemounter --lang pl   # Polish
+
+# Remove desktop integrations and shortcuts
+drivemounter --uninstall
+```
+
+### 🗑️ Uninstallation
+
+To completely uninstall DriveMounter, including desktop shortcuts, Dolphin context menu, launcher symlinks, and optionally `.venv` and saved credentials:
+
+```bash
+# Run the automated interactive uninstaller
+./uninstall.sh
 ```
 
 ---
@@ -168,6 +180,7 @@ drivemounter/
 ├── drivemounter.desktop          # XDG desktop application entry (KDE Menu & System Settings)
 ├── drivemounter-service.desktop  # KDE Dolphin Service Menu (right-click actions)
 ├── setup.sh                      # One-step installation script with .venv default
+├── uninstall.sh                  # Interactive uninstaller script
 ├── setup.py                      # Python packaging script
 ├── pyproject.toml                # Modern PEP 517/621 package configuration
 ├── requirements.txt              # Python requirements
