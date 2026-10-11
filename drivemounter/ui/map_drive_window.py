@@ -67,16 +67,22 @@ class MountWorkerThread(QtCore.QThread):
             self.failed.emit(f"Wystąpił nieoczekiwany błąd: {e}")
 
 class MapNetworkDriveWindow(QtWidgets.QDialog):
-    def __init__(self, parent: Optional[QtWidgets.QWidget] = None):
+    def __init__(self, parent: Optional[QtWidgets.QWidget] = None, initial_folder: str = ""):
         super().__init__(parent)
         self.settings = load_settings()
         self.mount_worker: Optional[MountWorkerThread] = None
         self.cached_credentials: Dict[str, Any] = {}
+        self.initial_folder = initial_folder
+        self._user_customized_name = False
 
         self._init_window()
         self._setup_ui()
         self._populate_drives()
         self._update_linux_path_preview()
+
+        if initial_folder:
+            self.folder_combo.setEditText(initial_folder)
+            self._on_folder_text_changed(initial_folder)
 
     def _init_window(self):
         self.setWindowTitle(t("MAIN_TITLE"))
@@ -92,7 +98,7 @@ class MapNetworkDriveWindow(QtWidgets.QDialog):
         main_layout.setContentsMargins(18, 16, 18, 16)
         main_layout.setSpacing(12)
 
-        # 1. Header instruction (Exact Windows prompt)
+        # 1. Header instruction (Prompt)
         self.header_label = QtWidgets.QLabel(t("HEADER_PROMPT"))
         self.header_label.setObjectName("headerInstruction")
         self.header_label.setWordWrap(True)
@@ -100,17 +106,21 @@ class MapNetworkDriveWindow(QtWidgets.QDialog):
 
         main_layout.addSpacing(4)
 
-        # 2. Main Form Grid (Drive and Folder rows)
+        # 2. Main Form Grid (Mount Name and Folder rows)
         grid = QtWidgets.QGridLayout()
         grid.setHorizontalSpacing(10)
         grid.setVerticalSpacing(12)
 
-        # Row 0: Drive letter
+        # Row 0: Mount Name / Drive
         drive_lbl = QtWidgets.QLabel(t("LABEL_DRIVE"))
-        drive_lbl.setFixedWidth(50)
+        drive_lbl.setFixedWidth(75)
         self.drive_combo = QtWidgets.QComboBox()
-        self.drive_combo.setMinimumWidth(130)
-        self.drive_combo.currentIndexChanged.connect(self._on_drive_changed)
+        self.drive_combo.setEditable(True)
+        self.drive_combo.setMinimumWidth(200)
+        if self.drive_combo.lineEdit():
+            self.drive_combo.lineEdit().setPlaceholderText(t("HINT_MOUNT_NAME"))
+            self.drive_combo.lineEdit().textEdited.connect(self._on_user_typed_name)
+        self.drive_combo.currentTextChanged.connect(self._on_drive_changed)
         drive_lbl.setBuddy(self.drive_combo)
 
         drive_box = QtWidgets.QHBoxLayout()
@@ -122,7 +132,7 @@ class MapNetworkDriveWindow(QtWidgets.QDialog):
 
         # Row 1: Folder
         folder_lbl = QtWidgets.QLabel(t("LABEL_FOLDER"))
-        folder_lbl.setFixedWidth(50)
+        folder_lbl.setFixedWidth(75)
         self.folder_combo = QtWidgets.QComboBox()
         self.folder_combo.setEditable(True)
         self.folder_combo.setInsertPolicy(QtWidgets.QComboBox.InsertPolicy.InsertAtTop)
@@ -247,43 +257,53 @@ class MapNetworkDriveWindow(QtWidgets.QDialog):
 
         main_layout.addLayout(btn_bar)
 
+    def _on_user_typed_name(self, text: str):
+        self._user_customized_name = bool(text.strip())
+        self._update_linux_path_preview()
+
     def _populate_drives(self):
         self.drive_combo.clear()
         mounts = load_mounts()
-        mapped_dict = {m.get("letter", "").upper(): m for m in mounts}
+        mapped_dict = {
+            (m.get("letter") or m.get("name") or "").upper().rstrip(":"): m
+            for m in mounts
+        }
 
-        first_free_idx = -1
+        # Add common Linux friendly names if free
+        common_names = ["share", "data", "nas", "backup"]
+        for name in common_names:
+            if name.upper() not in mapped_dict:
+                self.drive_combo.addItem(QtGui.QIcon.fromTheme("folder-network"), name, name)
 
-        for idx, letter in enumerate(WINDOWS_DRIVE_LETTERS):
-            if letter in mapped_dict:
-                m = mapped_dict[letter]
+        # Add classic Windows drive letters as alternatives
+        for letter in WINDOWS_DRIVE_LETTERS:
+            clean = letter.rstrip(":")
+            if clean in mapped_dict:
+                m = mapped_dict[clean]
                 dest = m.get("windows_unc") or m.get("canonical_uri", "")
                 self.drive_combo.addItem(QtGui.QIcon.fromTheme("drive-network"), f"{letter} ({dest})", letter)
             else:
-                self.drive_combo.addItem(f"{letter}", letter)
-                if first_free_idx == -1:
-                    first_free_idx = idx
+                self.drive_combo.addItem(QtGui.QIcon.fromTheme("drive-network"), f"{letter}", letter)
 
-        if first_free_idx != -1:
-            self.drive_combo.setCurrentIndex(first_free_idx)
-        else:
-            self.drive_combo.setCurrentIndex(0)
+        self.drive_combo.setEditText("")
 
     def _on_drive_changed(self):
         self._update_linux_path_preview()
 
     def _update_linux_path_preview(self):
-        letter = self.drive_combo.currentData() or "Z:"
-        letter_clean = letter.rstrip(":")
+        raw_name = self.drive_combo.currentText().strip() or self.drive_combo.currentData() or ""
+        # Clean up any trailing colons or path separators
+        name_clean = raw_name.split()[0].rstrip(":") if raw_name else "share"
+        name_clean = name_clean.replace("/", "_").replace("\\", "_")
         base_dir = self.settings.get("mount_base_dir", str(Path.home() / "Network"))
-        full_path = os.path.join(base_dir, letter_clean)
+        full_path = os.path.join(base_dir, name_clean)
         self.linux_path_label.setText(f"{t('ACCESS_POINT')} <b>{full_path}</b>")
 
     def _on_folder_text_changed(self, text: str):
         text_clean = text.strip()
         self.finish_btn.setEnabled(bool(text_clean))
         
-        # Live protocol detection badge
+        # Live protocol detection & auto-suggest friendly mount name
         if text_clean:
             try:
                 info = parse_share_input(text_clean)
@@ -295,6 +315,15 @@ class MapNetworkDriveWindow(QtWidgets.QDialog):
                 elif proto == "WEBDAV":
                     self.proto_badge.setText("WebDAV")
                 self.proto_badge.setVisible(True)
+
+                # Auto-suggest share name if user has not manually customized the name
+                if not self._user_customized_name:
+                    share_part = info.get("share", "").strip("/").split("/")[-1]
+                    suggested = share_part or info.get("host", "share")
+                    if suggested:
+                        clean_sug = suggested.replace(" ", "_")
+                        self.drive_combo.setEditText(clean_sug)
+                        self._update_linux_path_preview()
             except Exception:
                 self.proto_badge.setVisible(False)
         else:
@@ -346,7 +375,11 @@ class MapNetworkDriveWindow(QtWidgets.QDialog):
             self.folder_combo.setFocus()
             return
 
-        letter = self.drive_combo.currentData() or "Z:"
+        chosen_name = self.drive_combo.currentText().strip() or self.drive_combo.currentData() or ""
+        if not chosen_name:
+            share_part = share_info.get("share", "").strip("/").split("/")[-1]
+            chosen_name = share_part or share_info.get("host", "share")
+        letter = chosen_name
         reconnect = self.reconnect_cb.isChecked()
         diff_creds = self.diff_creds_cb.isChecked()
 

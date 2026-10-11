@@ -11,14 +11,17 @@ from typing import Optional
 
 XBEL_PATH = Path.home() / ".local" / "share" / "user-places.xbel"
 
-def add_place_to_dolphin(letter: str, mount_path: str, display_name: str, icon_name: str = "drive-network") -> bool:
+def add_place_to_dolphin(identifier: str, mount_path: str, display_name: str, icon_name: str = "drive-network") -> bool:
     """
-    Adds a mapped network drive to KDE Dolphin's Places list.
+    Adds a mapped network drive or folder to KDE Dolphin's Places list.
     """
-    letter = letter.upper().rstrip(":")
-    tag_id = f"drivemounter-{letter}"
+    clean_id = identifier.strip().rstrip(":")
+    tag_id = f"drivemounter-{clean_id.lower()}"
     href_url = f"file://{os.path.abspath(mount_path)}"
-    title_text = f"{letter}: [{display_name}]"
+    if len(clean_id) == 1 and clean_id.isalpha():
+        title_text = f"{clean_id.upper()}: [{display_name}]"
+    else:
+        title_text = f"{clean_id} [{display_name}]"
 
     try:
         if not XBEL_PATH.exists():
@@ -81,12 +84,12 @@ def add_place_to_dolphin(letter: str, mount_path: str, display_name: str, icon_n
         print(f"Error updating Dolphin places: {e}")
         return False
 
-def remove_place_from_dolphin(letter: str) -> bool:
+def remove_place_from_dolphin(identifier: str) -> bool:
     """
-    Removes a mapped network drive from KDE Dolphin's Places list.
+    Removes a mapped network drive or folder from KDE Dolphin's Places list.
     """
-    letter = letter.upper().rstrip(":")
-    tag_id = f"drivemounter-{letter}"
+    clean_id = identifier.strip().rstrip(":")
+    tag_id = f"drivemounter-{clean_id.lower()}"
 
     if not XBEL_PATH.exists():
         return False

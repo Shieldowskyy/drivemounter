@@ -60,12 +60,22 @@ def mount_drive(
     """
     Mounts a remote share (SMB, NFS, WebDAV) to the specified Windows drive letter.
     """
-    letter = letter.upper().rstrip(":")
+    clean_identifier = letter.strip()
+    if len(clean_identifier) == 2 and clean_identifier[1] == ':':
+        mount_folder_name = clean_identifier[0].upper()
+        save_letter = clean_identifier.upper()
+    elif len(clean_identifier) == 1 and clean_identifier.isalpha():
+        mount_folder_name = clean_identifier.upper()
+        save_letter = f"{clean_identifier.upper()}:"
+    else:
+        mount_folder_name = clean_identifier.replace("/", "_").replace("\\", "_")
+        save_letter = mount_folder_name
+
     settings = load_settings()
     base_dir = Path(settings.get("mount_base_dir", Path.home() / "Network"))
     base_dir.mkdir(parents=True, exist_ok=True)
 
-    mount_link_path = base_dir / letter
+    mount_link_path = base_dir / mount_folder_name
     protocol = share_info["protocol"]
     host = share_info["host"]
     share_name = share_info.get("share", "")
@@ -132,7 +142,8 @@ def mount_drive(
     # Save mount configuration
     display_name = share_info.get("display_name", f"{share_name} on {host}")
     mount_entry = {
-        "letter": f"{letter}:",
+        "letter": save_letter,
+        "name": mount_folder_name,
         "protocol": protocol,
         "host": host,
         "share": share_name,
@@ -147,21 +158,26 @@ def mount_drive(
         "has_credentials": bool(username)
     }
 
-    mounts = [m for m in load_mounts() if m.get("letter", "").upper() != f"{letter}:"]
+    mounts = [
+        m for m in load_mounts()
+        if m.get("letter", "").upper().rstrip(":") != mount_folder_name.upper()
+        and m.get("name", "").lower() != mount_folder_name.lower()
+    ]
     mounts.append(mount_entry)
     save_mounts(mounts)
 
     # Add to Dolphin Places
-    add_place_to_dolphin(letter, str(mount_link_path), display_name)
+    add_place_to_dolphin(save_letter, str(mount_link_path), display_name)
 
     # Setup autostart if reconnect requested
     has_any_reconnect = any(m.get("reconnect") for m in mounts)
     setup_autostart(has_any_reconnect)
 
     # Show native notification
+    from drivemounter.i18n import t
     _send_notification(
-        "Dysk sieciowy zmapowany",
-        f"Pomyślnie podłączono {letter}: do {share_info.get('windows_unc') or canonical_uri}"
+        t("NOTIF_MOUNTED_TITLE"),
+        t("NOTIF_MOUNTED_BODY", letter=save_letter, target=share_info.get("windows_unc") or canonical_uri)
     )
 
     return mount_entry
@@ -287,17 +303,17 @@ def _mount_nfs(share_info: Dict[str, Any], mount_dir: Path) -> str:
             pass
         raise MountError(f"Błąd montowania NFS ({nfs_target}): {err}")
 
-    return str(mount_dir)
-
-def unmount_drive(letter: str) -> bool:
+def unmount_drive(letter_or_name: str) -> bool:
     """
-    Unmounts the specified drive letter, cleans symlinks, and removes from Dolphin places.
+    Unmounts the specified drive or folder name, cleans symlinks, and removes from Dolphin places.
     """
-    letter = letter.upper().rstrip(":")
+    clean_id = letter_or_name.strip().rstrip(":")
     mounts = load_mounts()
     target_mount = None
     for m in mounts:
-        if m.get("letter", "").upper().rstrip(":") == letter:
+        m_let = m.get("letter", "").strip().rstrip(":")
+        m_name = m.get("name", "").strip()
+        if clean_id.lower() in (m_let.lower(), m_name.lower()):
             target_mount = m
             break
 
@@ -305,14 +321,14 @@ def unmount_drive(letter: str) -> bool:
         # Check if local symlink exists anyway
         settings = load_settings()
         base_dir = Path(settings.get("mount_base_dir", Path.home() / "Network"))
-        link_path = base_dir / letter
+        link_path = base_dir / clean_id
         if link_path.is_symlink() or link_path.exists():
             try:
                 if link_path.is_symlink():
                     link_path.unlink()
             except Exception:
                 pass
-        remove_place_from_dolphin(letter)
+        remove_place_from_dolphin(clean_id)
         return True
 
     protocol = target_mount.get("protocol")
@@ -345,19 +361,24 @@ def unmount_drive(letter: str) -> bool:
             pass
 
     # Remove from Dolphin places
-    remove_place_from_dolphin(letter)
+    remove_place_from_dolphin(clean_id)
 
     # Remove from saved mounts
-    updated = [m for m in mounts if m.get("letter", "").upper().rstrip(":") != letter]
+    updated = [
+        m for m in mounts
+        if clean_id.lower() not in (m.get("letter", "").strip().rstrip(":").lower(), m.get("name", "").strip().lower())
+    ]
     save_mounts(updated)
 
     # Update autostart if no drives left with reconnect
     setup_autostart(any(m.get("reconnect") for m in updated))
 
+    from drivemounter.i18n import t
     _send_notification(
-        "Dysk sieciowy odłączony",
-        f"Pomyślnie odłączono dysk {letter}:"
+        t("NOTIF_UNMOUNTED_TITLE"),
+        t("NOTIF_UNMOUNTED_BODY", letter=clean_id)
     )
+
     return True
 
 def remount_all_drives() -> Tuple[int, int]:

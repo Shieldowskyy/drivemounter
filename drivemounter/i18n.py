@@ -3,6 +3,7 @@ Internationalization (i18n) module for DriveMounter.
 English is the primary and default language, matching the exact Windows phrases.
 """
 
+import os
 from typing import Dict
 from drivemounter.config import load_settings
 
@@ -13,12 +14,16 @@ STRINGS: Dict[str, Dict[str, str]] = {
         "pl": "Mapowanie dysku sieciowego"
     },
     "HEADER_PROMPT": {
-        "en": "Specify the drive letter for the connection and the folder that you want to connect to:",
-        "pl": "Określ literę dysku dla połączenia i folder, z którym chcesz się połączyć:"
+        "en": "Specify the mount name and the network folder that you want to connect to:",
+        "pl": "Określ nazwę punktu montowania i folder sieciowy, z którym chcesz się połączyć:"
     },
     "LABEL_DRIVE": {
-        "en": "D&rive:",
-        "pl": "D&ysk:"
+        "en": "&Name / Drive:",
+        "pl": "&Nazwa / Dysk:"
+    },
+    "HINT_MOUNT_NAME": {
+        "en": "e.g. data, backup or Z:",
+        "pl": "np. dane, backup lub Z:"
     },
     "LABEL_FOLDER": {
         "en": "&Folder:",
@@ -155,8 +160,8 @@ STRINGS: Dict[str, Dict[str, str]] = {
         "pl": "Wybierz dyski sieciowe, które chcesz odłączyć:"
     },
     "COL_DRIVE": {
-        "en": "Drive",
-        "pl": "Dysk"
+        "en": "Name / Drive",
+        "pl": "Nazwa / Dysk"
     },
     "COL_NETWORK_PATH": {
         "en": "Network Path",
@@ -244,12 +249,27 @@ STRINGS: Dict[str, Dict[str, str]] = {
     }
 }
 
-def t(key: str, **kwargs) -> str:
+def get_current_language() -> str:
     """
-    Translates key to target language. Defaults to English ('en').
+    Determines UI language.
+    If 'auto', checks environment (LANG, LC_ALL, LC_MESSAGES).
     """
     settings = load_settings()
-    lang = settings.get("language", "en")
+    configured = settings.get("language", "auto")
+    if configured in ("en", "pl"):
+        return configured
+
+    # Auto-detect from system environment
+    sys_env = os.environ.get("LC_ALL") or os.environ.get("LC_MESSAGES") or os.environ.get("LANG", "")
+    if sys_env.lower().startswith("pl"):
+        return "pl"
+    return "en"
+
+def t(key: str, **kwargs) -> str:
+    """
+    Translates key to target language. Automatically follows system locale.
+    """
+    lang = get_current_language()
     entry = STRINGS.get(key, {})
     text = entry.get(lang) or entry.get("en", key)
     if kwargs:

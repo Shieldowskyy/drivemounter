@@ -25,6 +25,7 @@ def main():
     parser.add_argument("--install-desktop", action="store_true", help="Install desktop shortcut and Dolphin service menu")
     parser.add_argument("--uninstall", action="store_true", help="Remove desktop shortcuts, Dolphin service menus, and autostart")
     parser.add_argument("--lang", choices=["en", "pl"], default=None, help="Force UI language (en=English, pl=Polish)")
+    parser.add_argument("paths", nargs="*", help="Optional path(s) passed by file manager or CLI")
 
     args = parser.parse_args()
 
@@ -63,12 +64,20 @@ def main():
     app = QtWidgets.QApplication(sys.argv)
     apply_kde_style(app)
 
+    # Detect if a remote folder or path was passed by Dolphin
+    initial_folder = ""
+    if args.paths:
+        for p in args.paths:
+            if p and (p.startswith(("\\\\", "smb://", "nfs://", "http://", "https://", "dav://", "davs://"))):
+                initial_folder = p
+                break
+
     if args.disconnect:
         dlg = DisconnectDialog()
         dlg.show()
         sys.exit(app.exec())
     else:
-        win = MapNetworkDriveWindow()
+        win = MapNetworkDriveWindow(initial_folder=initial_folder)
         win.show()
         sys.exit(app.exec())
 
@@ -118,7 +127,7 @@ X-KDE-Priority=TopLevel
 Name=Map Network Drive...
 Name[pl]=Mapuj dysk sieciowy...
 Icon=drive-network
-Exec={exec_cmd}
+Exec={exec_cmd} %u
 
 [Desktop Action disconnectNetworkDrive]
 Name=Disconnect Network Drive...

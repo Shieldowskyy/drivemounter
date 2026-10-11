@@ -94,13 +94,13 @@ class DisconnectDialog(QtWidgets.QDialog):
         self.table.setRowCount(len(mounts))
 
         for row, m in enumerate(mounts):
-            letter = m.get("letter", "")
+            display_id = m.get("name") or m.get("letter", "")
             unc = m.get("windows_unc") or m.get("canonical_uri", "")
             proto = m.get("protocol", "").upper()
             local_path = m.get("local_path", "")
 
-            item_letter = QtWidgets.QTableWidgetItem(letter)
-            item_letter.setIcon(QtGui.QIcon.fromTheme("drive-network"))
+            item_letter = QtWidgets.QTableWidgetItem(display_id)
+            item_letter.setIcon(QtGui.QIcon.fromTheme("drive-network", QtGui.QIcon.fromTheme("folder-network")))
             item_letter.setData(QtCore.Qt.ItemDataRole.UserRole, m)
 
             item_unc = QtWidgets.QTableWidgetItem(unc)
@@ -132,8 +132,8 @@ class DisconnectDialog(QtWidgets.QDialog):
             if item:
                 m = item.data(QtCore.Qt.ItemDataRole.UserRole)
                 if m:
-                    letter = m.get("letter", "")
-                    unmount_drive(letter)
+                    identifier = m.get("name") or m.get("letter", "")
+                    unmount_drive(identifier)
 
         self.refresh_list()
 
@@ -144,14 +144,15 @@ class DisconnectDialog(QtWidgets.QDialog):
 
         confirm = QtWidgets.QMessageBox.question(
             self,
-            "Potwierdzenie odłączenia",
-            f"Czy na pewno chcesz odłączyć wszystkie ({len(mounts)}) zmapowane dyski sieciowe?",
+            t("DISC_TITLE"),
+            t("CONFIRM_DISCONNECT_ALL", count=len(mounts)),
             QtWidgets.QMessageBox.StandardButton.Yes | QtWidgets.QMessageBox.StandardButton.No,
             QtWidgets.QMessageBox.StandardButton.No
         )
         if confirm == QtWidgets.QMessageBox.StandardButton.Yes:
             for m in mounts:
-                unmount_drive(m.get("letter", ""))
+                identifier = m.get("name") or m.get("letter", "")
+                unmount_drive(identifier)
             self.refresh_list()
 
     def _open_selected_in_dolphin(self):

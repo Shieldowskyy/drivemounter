@@ -20,7 +20,7 @@ DEFAULT_SETTINGS = {
     "notify_on_mount": True,
     "reconnect_delay_seconds": 2,
     "theme_mode": "native_breeze",
-    "language": "en"  # English is primary/priority as requested
+    "language": "auto"  # Automatically follows system language (e.g. Polish on pl_PL)
 }
 
 WINDOWS_DRIVE_LETTERS = [
@@ -75,12 +75,12 @@ def save_mounts(mounts: List[Dict[str, Any]]):
     with open(MOUNTS_FILE, 'w', encoding='utf-8') as f:
         json.dump(mounts, f, indent=2, ensure_ascii=False)
 
-def get_mount_for_letter(letter: str) -> Optional[Dict[str, Any]]:
-    letter = letter.upper()
-    if not letter.endswith(':'):
-        letter += ':'
+def get_mount_for_letter(identifier: str) -> Optional[Dict[str, Any]]:
+    clean_id = identifier.strip().rstrip(":")
     for m in load_mounts():
-        if m.get('letter', '').upper() == letter:
+        m_let = m.get('letter', '').strip().rstrip(":")
+        m_name = m.get('name', '').strip()
+        if clean_id.lower() in (m_let.lower(), m_name.lower()):
             return m
     return None
 
