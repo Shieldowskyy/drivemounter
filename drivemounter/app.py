@@ -84,14 +84,44 @@ Comment[pl]=Mapuj udziały sieciowe SMB, NFS oraz WebDAV za pomocą kreatora w s
 Exec={exec_cmd}
 Icon=drive-network
 Terminal=false
-Categories=Qt;KDE;System;Network;FileTools;
+Categories=Qt;KDE;System;Settings;Network;FileTools;
+X-KDE-System-Settings-Parent-Category=network
+X-KDE-Weight=70
 StartupNotify=true
 StartupWMClass=drivemounter
-Keywords=drive;mount;network;samba;smb;nfs;webdav;share;cifs;
+Keywords=drive;mount;network;samba;smb;nfs;webdav;share;cifs;knetattach;remote;
 """
     with open(target, "w", encoding="utf-8") as f:
         f.write(content)
     os.chmod(target, 0o755)
+
+    # Install Dolphin Service Menu
+    services_dir = Path.home() / ".local" / "share" / "kio" / "servicemenus"
+    services_dir.mkdir(parents=True, exist_ok=True)
+    service_target = services_dir / "drivemounter.desktop"
+    service_content = f"""[Desktop Entry]
+Type=Service
+MimeType=inode/directory;all/allfiles;
+Actions=mapNetworkDrive;disconnectNetworkDrive;
+X-KDE-Submenu=Network Drives
+X-KDE-Submenu[pl]=Dyski sieciowe
+X-KDE-Priority=TopLevel
+
+[Desktop Action mapNetworkDrive]
+Name=Map Network Drive...
+Name[pl]=Mapuj dysk sieciowy...
+Icon=drive-network
+Exec={exec_cmd}
+
+[Desktop Action disconnectNetworkDrive]
+Name=Disconnect Network Drive...
+Name[pl]=Odłącz dysk sieciowy...
+Icon=media-eject
+Exec={exec_cmd} --disconnect
+"""
+    with open(service_target, "w", encoding="utf-8") as f:
+        f.write(service_content)
+    os.chmod(service_target, 0o755)
 
 if __name__ == "__main__":
     main()

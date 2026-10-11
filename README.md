@@ -42,7 +42,10 @@ Seamlessly mount remote network storage on Linux with the familiar Windows workf
 - **KDE Plasma & Linux Native Integration:**
   - 100% native Qt6 Breeze styling, automatically inheriting active color scheme (Breeze Dark / Breeze Light).
   - Uses native KDE Breeze icons (`drive-network`, `network-server`, `media-eject`, `dialog-password`).
-  - **KDE Dolphin Integration:** Mapped drives automatically appear in Dolphin's **Places** sidebar with the network drive icon.
+  - **KDE Dolphin Integration:**
+    - **Places Sidebar:** Mapped drives automatically appear in Dolphin's **Places** panel with network drive icons.
+    - **Context Menu (Service Menu):** Right-click anywhere or on folders in Dolphin to trigger **"Map Network Drive..."** or **"Disconnect Network Drive..."**.
+  - **KDE System Settings:** Native `.desktop` integration registered directly under the **Network** module in KDE System Settings and KRunner.
   - **File System Access:** Every drive is mapped to `~/Network/<Letter>` (e.g., `~/Network/Z`), making it instantly accessible to Linux applications, CLI tools, Wine, and Steam Proton.
   - Native desktop notifications on mount/unmount via KDE notification daemon.
 
@@ -162,7 +165,8 @@ drivemounter/
 │       └── web_location_dialog.py# WebDAV / Cloud storage wizard
 ├── tests/
 │   └── test_drivemounter.py      # Automated unit tests
-├── drivemounter.desktop          # XDG desktop application entry
+├── drivemounter.desktop          # XDG desktop application entry (KDE Menu & System Settings)
+├── drivemounter-service.desktop  # KDE Dolphin Service Menu (right-click actions)
 ├── setup.sh                      # One-step installation script with .venv default
 ├── setup.py                      # Python packaging script
 ├── pyproject.toml                # Modern PEP 517/621 package configuration

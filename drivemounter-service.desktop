@@ -1,0 +1,19 @@
+[Desktop Entry]
+Type=Service
+MimeType=inode/directory;all/allfiles;
+Actions=mapNetworkDrive;disconnectNetworkDrive;
+X-KDE-Submenu=Network Drives
+X-KDE-Submenu[pl]=Dyski sieciowe
+X-KDE-Priority=TopLevel
+
+[Desktop Action mapNetworkDrive]
+Name=Map Network Drive...
+Name[pl]=Mapuj dysk sieciowy...
+Icon=drive-network
+Exec=drivemounter
+
+[Desktop Action disconnectNetworkDrive]
+Name=Disconnect Network Drive...
+Name[pl]=Odłącz dysk sieciowy...
+Icon=media-eject
+Exec=drivemounter --disconnect
