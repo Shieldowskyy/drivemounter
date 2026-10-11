@@ -118,6 +118,21 @@ ln -sf "$(pwd)/bin/drivemounter" ~/.local/bin/drivemounter
 drivemounter --install-desktop
 ```
 
+### Package Installation (Debian / Ubuntu / Fedora)
+
+#### Debian / Ubuntu / Kubuntu (`.deb`)
+```bash
+# Build locally or download from GitHub Releases
+./packaging/build_deb.sh
+sudo apt install ./dist/drivemounter_1.0.0_all.deb
+```
+
+#### Fedora / RHEL (`.rpm`)
+```bash
+# Download the .rpm package from GitHub Releases and install
+sudo dnf install ./dist/drivemounter-1.0.0-1.noarch.rpm
+```
+
 ---
 
 ## 💡 Usage

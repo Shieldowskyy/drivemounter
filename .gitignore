@@ -34,3 +34,6 @@ venv.bak/
 credentials.json
 mounts.json
 settings.json
+build_deb/
+*.deb
+*.rpm
