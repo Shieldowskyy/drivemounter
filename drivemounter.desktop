@@ -1,0 +1,15 @@
+[Desktop Entry]
+Type=Application
+Name=Map Network Drive
+Name[pl]=Mapuj dysk sieciowy
+GenericName=Network Drive Mounter
+GenericName[pl]=Narzędzie do mapowania dysków sieciowych
+Comment=Mount SMB, NFS, and WebDAV network shares with a Windows-like wizard
+Comment[pl]=Mapuj udziały sieciowe SMB, NFS oraz WebDAV za pomocą kreatora w stylu Windows
+Exec=drivemounter
+Icon=drive-network
+Terminal=false
+Categories=Qt;KDE;System;Network;FileTools;
+StartupNotify=true
+StartupWMClass=drivemounter
+Keywords=drive;mount;network;samba;smb;nfs;webdav;share;cifs;

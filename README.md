@@ -6,6 +6,20 @@ Seamlessly mount remote network storage on Linux with the familiar Windows workf
 
 ---
 
+## 📸 Screenshots
+
+<p align="center">
+  <img src="screenshot_main.png" alt="DriveMounter - Map Network Drive" width="540" />
+</p>
+
+<p align="center">
+  <img src="screenshot_credentials.png" alt="Windows Security Credentials Dialog" width="380" />
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="screenshot_disconnect.png" alt="Disconnect Network Drives" width="460" />
+</p>
+
+---
+
 ## 🌟 Key Features
 
 - **1:1 Windows Map Network Drive Wizard Workflow:**
@@ -36,24 +50,67 @@ Seamlessly mount remote network storage on Linux with the familiar Windows workf
 
 ---
 
+## 📦 System Dependencies
+
+Ensure the required system tools and network clients are installed for your distribution:
+
+### Ubuntu / Debian / Kubuntu
+```bash
+sudo apt update
+sudo apt install python3 python3-venv python3-pip cifs-utils nfs-common davfs2 smbclient libnotify-bin
+```
+
+### Fedora
+```bash
+sudo dnf install python3 python3-pip cifs-utils nfs-utils davfs2 samba-client libnotify
+```
+
+### Arch Linux / Manjaro
+```bash
+sudo pacman -S python python-pip cifs-utils nfs-utils davfs2 samba libnotify
+```
+
+---
+
 ## 🚀 Getting Started
 
-### Installation & Launcher Setup
+### Quick Install (Default with Python `venv`)
+
+The repository includes a dedicated `setup.sh` that automatically creates an isolated virtual environment (`.venv`), installs dependencies, generates the desktop shortcut, and links `drivemounter` into your `~/.local/bin`:
 
 ```bash
-# Clone or navigate to the repository
-cd ~/Dokumenty/drivemounter
+# Clone the repository
+git clone https://github.com/Shieldowskyy/drivemounter.git
+cd drivemounter
 
-# Make launcher executable and link to ~/.local/bin
-chmod +x bin/drivemounter
+# Run the automated setup script (uses .venv by default)
+./setup.sh
+```
+
+### Manual Setup with `venv`
+
+If you prefer to configure the virtual environment manually:
+
+```bash
+# 1. Create and activate virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# 2. Install dependencies & package in editable mode
+pip install --upgrade pip
+pip install -e .
+
+# 3. Link launcher to your local path
 mkdir -p ~/.local/bin
 ln -sf "$(pwd)/bin/drivemounter" ~/.local/bin/drivemounter
 
-# Install KDE Application Menu (.desktop) entry
+# 4. Install KDE Application Menu (.desktop) entry
 drivemounter --install-desktop
 ```
 
-### Usage
+---
+
+## 💡 Usage
 
 ```bash
 # Launch the Map Network Drive wizard
@@ -65,8 +122,9 @@ drivemounter --disconnect
 # Silent background remount (used automatically on user login)
 drivemounter --remount
 
-# Force Polish language (English is default)
-drivemounter --lang pl
+# Switch UI language (English is default)
+drivemounter --lang en   # English
+drivemounter --lang pl   # Polish
 ```
 
 ---
@@ -76,7 +134,7 @@ drivemounter --lang pl
 ```
 drivemounter/
 ├── bin/
-│   └── drivemounter              # Shell launcher script
+│   └── drivemounter              # Smart shell launcher (auto-detects .venv)
 ├── drivemounter/
 │   ├── __init__.py
 │   ├── app.py                    # Main application entry point & CLI handler
@@ -97,8 +155,12 @@ drivemounter/
 │       └── web_location_dialog.py# WebDAV / Cloud storage wizard
 ├── tests/
 │   └── test_drivemounter.py      # Automated unit tests
-├── drivemounter.desktop          # XDG desktop shortcut
-├── setup.py                      # Python packaging setup
+├── drivemounter.desktop          # XDG desktop application entry
+├── setup.sh                      # One-step installation script with .venv default
+├── setup.py                      # Python packaging script
+├── pyproject.toml                # Modern PEP 517/621 package configuration
+├── requirements.txt              # Python requirements
+├── LICENSE                       # MIT License
 └── README.md                     # Documentation
 ```
 
@@ -106,7 +168,7 @@ drivemounter/
 
 ## 🔒 Security & Credentials
 
-Network credentials are saved locally in `~/.config/drivemounter/credentials.json` with strict user-only permissions (`chmod 0600`). Alternatively, credentials are fed securely during the mount session.
+Network credentials are saved locally in `~/.config/drivemounter/credentials.json` with strict user-only permissions (`chmod 0600`). Alternatively, credentials can be provided per-session without storing them to disk.
 
 ---
 
@@ -118,6 +180,13 @@ python3 -m unittest discover -s tests -v
 
 ---
 
+## 👤 Author
+
+**Krzysztof (Shieldziak) Tarczyński**  
+- GitHub: [@Shieldowskyy](https://github.com/Shieldowskyy)
+
+---
+
 ## 📄 License
 
-MIT License. Free for personal and commercial use.
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.

@@ -106,6 +106,10 @@ STRINGS: Dict[str, Dict[str, str]] = {
         "en": "Remember my credentials",
         "pl": "Zapamiętaj moje poświadczenia"
     },
+    "AUTH_EMPTY_USER": {
+        "en": "Please enter a user name.",
+        "pl": "Podaj nazwę użytkownika."
+    },
 
     # Browse Dialog
     "BROWSE_TITLE": {

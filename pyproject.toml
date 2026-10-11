@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "drivemounter"
+version = "1.0.0"
+description = "1:1 Windows Map Network Drive clone for KDE Plasma (SMB, NFS, WebDAV)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Krzysztof (Shieldziak) Tarczyński", email = "32707076+Shieldowskyy@users.noreply.github.com" },
+]
+classifiers = [
+    "Environment :: X11 Applications :: Qt",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Topic :: Desktop Environment :: K Desktop Environment (KDE)",
+    "Topic :: System :: Networking",
+]
+dependencies = [
+    "PyQt6>=6.5.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Shieldowskyy/drivemounter"
+Repository = "https://github.com/Shieldowskyy/drivemounter"
+Issues = "https://github.com/Shieldowskyy/drivemounter/issues"
+
+[project.scripts]
+drivemounter = "drivemounter.app:main"

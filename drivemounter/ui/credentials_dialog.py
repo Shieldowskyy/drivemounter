@@ -104,7 +104,7 @@ class CredentialsDialog(QtWidgets.QDialog):
         # Action buttons
         btn_box = QtWidgets.QDialogButtonBox()
         self.ok_btn = btn_box.addButton("OK", QtWidgets.QDialogButtonBox.ButtonRole.AcceptRole)
-        self.cancel_btn = btn_box.addButton("Anuluj", QtWidgets.QDialogButtonBox.ButtonRole.RejectRole)
+        self.cancel_btn = btn_box.addButton(t("BTN_CANCEL"), QtWidgets.QDialogButtonBox.ButtonRole.RejectRole)
         self.ok_btn.setDefault(True)
 
         btn_box.accepted.connect(self._on_accept)
@@ -125,7 +125,7 @@ class CredentialsDialog(QtWidgets.QDialog):
 
     def _on_accept(self):
         if not self.user_edit.text().strip():
-            QtWidgets.QMessageBox.warning(self, "Wymagane dane", "Podaj nazwę użytkownika.")
+            QtWidgets.QMessageBox.warning(self, t("SEC_TITLE"), t("AUTH_EMPTY_USER"))
             self.user_edit.setFocus()
             return
         self.accept()

@@ -2,4 +2,14 @@
 # DriveMounter launcher script
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd)"
 export PYTHONPATH="$DIR:$PYTHONPATH"
-exec python3 -m drivemounter.app "$@"
+
+# Prefer project virtual environment (.venv) if available
+if [ -x "$DIR/.venv/bin/python" ]; then
+    PYTHON_EXEC="$DIR/.venv/bin/python"
+elif [ -x "$DIR/venv/bin/python" ]; then
+    PYTHON_EXEC="$DIR/venv/bin/python"
+else
+    PYTHON_EXEC="python3"
+fi
+
+exec "$PYTHON_EXEC" -m drivemounter.app "$@"
