@@ -22,6 +22,7 @@ def main():
     )
     parser.add_argument("--remount", action="store_true", help="Silent remount on login (autostart)")
     parser.add_argument("--disconnect", action="store_true", help="Open disconnect network drives window")
+    parser.add_argument("--install-desktop", action="store_true", help="Install desktop shortcut and Dolphin service menu")
     parser.add_argument("--uninstall", action="store_true", help="Remove desktop shortcuts, Dolphin service menus, and autostart")
     parser.add_argument("--lang", choices=["en", "pl"], default=None, help="Force UI language (en=English, pl=Polish)")
 
